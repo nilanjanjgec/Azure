@@ -1,0 +1,100 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "0.9.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the HDInsight cluster to create."
+            }
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-03-01-preview",
+            "name": "CBAPSparkR001",
+            "type": "Microsoft.HDInsight/clusters",
+            "location": "westeurope",
+            "dependsOn": [],
+            "properties": {
+                "clusterVersion": "3.4",
+                "osType": "Linux",
+                "tier": "premium",
+                "clusterDefinition": {
+                    "kind": "spark",
+                    "configurations": {
+                        "gateway": {
+                            "restAuthCredential.isEnabled": true,
+                            "restAuthCredential.username": "admin",
+                            "restAuthCredential.password": "Carlsberg*1234"
+                        },
+                        "core-site": {
+                            "fs.defaultFS": "wasb://cbap-container-001sparkr@cbap01dastr002.blob.core.windows.net",
+                            "fs.azure.account.key.cbap01dastr002.blob.core.windows.net": "+arDADwkpuFutL7GJdprlka5oGYz5l/IocNNwIMiSiuCzWfVpeXx6U4Ac1f5q+8AnT1I5cP0bU8qQ+mssQno2Q=="
+                        }
+                    }
+                },
+                "computeProfile": {
+                    "roles": [
+                        {
+                            "name": "headnode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "Large"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "adminssh",
+                                    "password": "Carlsberg*1234"
+                                }
+                            },
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "workernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "Large"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "adminssh",
+                                    "password": "Carlsberg*1234"
+                                }
+                            },
+                            "scriptActions": []
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "RServerForHDInsight_2016-07-07T05.35.59.790Z",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.HDInsight/clusters/CBAPSparkR001"
+            ],
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "https://gallery.azure.com/artifact/20151001/Microsoft.RServerForHDInsight.8.0.3/Artifacts/mainTemplate.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "clusterName": {
+                        "value": "[parameters('clusterName')]"
+                    },
+                    "galleryPackageIdentity": {
+                        "value": "Microsoft.RServerForHDInsight.8.0.3"
+                    },
+                    "edgeNodeSize": {
+                        "value": "A6"
+                    }
+                }
+            }
+        }
+    ]
+}
